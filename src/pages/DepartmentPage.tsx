@@ -20,8 +20,10 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { departmentApi } from '../api/department';
 import type { Department } from '../api/department';
+import { useAuth } from '../hooks/useAuth';
 
 export default function DepartmentPage() {
+    const { can } = useAuth();
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [editId, setEditId] = useState<number | null>(null);
@@ -93,10 +95,6 @@ export default function DepartmentPage() {
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newName = e.target.value;
         setName(newName);
-        // Auto-generate slug if not editing or simply always sync if desired
-        // Usually, we sync only if slug is pristine or upon creation.
-        // For simplicity, we'll sync it unless user manually edited slug (which we aren't tracking separately),
-        // or just simple sync:
         const generatedSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
         setSlug(generatedSlug);
     };
@@ -107,9 +105,11 @@ export default function DepartmentPage() {
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h4">Departments</Typography>
-                <Button variant="contained" onClick={() => handleOpen()}>
-                    Add Department
-                </Button>
+                {can('write', 'department') && (
+                    <Button variant="contained" onClick={() => handleOpen()}>
+                        Add Department
+                    </Button>
+                )}
             </Box>
 
             <TableContainer component={Paper}>
@@ -129,12 +129,16 @@ export default function DepartmentPage() {
                                 <TableCell>{dept.name}</TableCell>
                                 <TableCell>{dept.slug}</TableCell>
                                 <TableCell align="right">
-                                    <Button color="primary" onClick={() => handleOpen(dept)}>
-                                        Edit
-                                    </Button>
-                                    <Button color="error" onClick={() => handleDelete(dept.id)}>
-                                        Delete
-                                    </Button>
+                                    {can('write', 'department') && (
+                                        <>
+                                            <Button color="primary" onClick={() => handleOpen(dept)}>
+                                                Edit
+                                            </Button>
+                                            <Button color="error" onClick={() => handleDelete(dept.id)}>
+                                                Delete
+                                            </Button>
+                                        </>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}

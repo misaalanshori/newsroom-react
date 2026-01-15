@@ -25,8 +25,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { newsApi } from '../api/news';
 import { departmentApi } from '../api/department';
 import type { News } from '../api/news';
+import { useAuth } from '../hooks/useAuth';
 
 export default function NewsPage() {
+    const { can, user: canUser } = useAuth();
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [viewOpen, setViewOpen] = useState(false);
@@ -44,6 +46,7 @@ export default function NewsPage() {
     const { data: departments } = useQuery({
         queryKey: ['departments'],
         queryFn: departmentApi.getAll,
+        enabled: can('read', 'department'),
     });
 
     const createMutation = useMutation({
@@ -127,9 +130,11 @@ export default function NewsPage() {
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h4">News Articles</Typography>
-                <Button variant="contained" onClick={() => handleOpen()}>
-                    Add Article
-                </Button>
+                {can('write', 'news') && (
+                    <Button variant="contained" onClick={() => handleOpen()}>
+                        Add Article
+                    </Button>
+                )}
             </Box>
 
             <TableContainer component={Paper}>
@@ -158,12 +163,21 @@ export default function NewsPage() {
                                 <TableCell>{item.department?.name || item.departmentId}</TableCell>
                                 <TableCell>{item.writerId}</TableCell>
                                 <TableCell align="right">
-                                    <Button color="primary" onClick={() => handleOpen(item)}>
-                                        Edit
-                                    </Button>
-                                    <Button color="error" onClick={() => handleDelete(item.id)}>
-                                        Delete
-                                    </Button>
+                                    {/* 
+                                      Show actions if:
+                                      1. User has global/wide write access (Admin/SuperAdmin) - check 'any' ownership.
+                                      2. OR User has general write access AND owns the item (Editor).
+                                    */}
+                                    {(can('write', 'news', 'any') || (can('write', 'news') && item.writerId === canUser?.sub)) && (
+                                        <>
+                                            <Button color="primary" onClick={() => handleOpen(item)}>
+                                                Edit
+                                            </Button>
+                                            <Button color="error" onClick={() => handleDelete(item.id)}>
+                                                Delete
+                                            </Button>
+                                        </>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -186,23 +200,26 @@ export default function NewsPage() {
                         onChange={(e) => setTitle(e.target.value)}
                         sx={{ mb: 2, mt: 1 }}
                     />
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                        <InputLabel>Department</InputLabel>
-                        <Select
-                            value={departmentId}
-                            label="Department"
-                            onChange={(e) => setDepartmentId(e.target.value as number | '')}
-                        >
-                            <MenuItem value="">
-                                <em>Default (Automatic)</em>
-                            </MenuItem>
-                            {departments?.map((dept) => (
-                                <MenuItem key={dept.id} value={dept.id}>
-                                    {dept.name}
+                    {/* Only show department selection if we have departments */}
+                    {departments && departments.length > 0 && (
+                        <FormControl fullWidth sx={{ mb: 2 }}>
+                            <InputLabel>Department</InputLabel>
+                            <Select
+                                value={departmentId}
+                                label="Department"
+                                onChange={(e) => setDepartmentId(e.target.value as number | '')}
+                            >
+                                <MenuItem value="">
+                                    <em>Default (Automatic)</em>
                                 </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
+                                {departments?.map((dept) => (
+                                    <MenuItem key={dept.id} value={dept.id}>
+                                        {dept.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    )}
                     <TextField
                         label="Contents"
                         multiline

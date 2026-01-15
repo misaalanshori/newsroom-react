@@ -8,6 +8,9 @@ import NewsPage from './pages/NewsPage';
 import DepartmentPage from './pages/DepartmentPage';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
+import UsersPage from './pages/UsersPage';
+import ProfilePage from './pages/ProfilePage';
+
 function App() {
   return (
     <AuthProvider>
@@ -20,6 +23,8 @@ function App() {
             <Route index element={<Navigate to="/news" replace />} />
             <Route path="news" element={<NewsPage />} />
             <Route path="department" element={<DepartmentPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="profile" element={<ProfilePage />} />
           </Route>
         </Route>
       </Routes>

@@ -20,7 +20,7 @@ import { useAuth } from '../hooks/useAuth';
 const drawerWidth = 240;
 
 export default function DashboardLayout() {
-    const { logout, user } = useAuth();
+    const { logout, user, can } = useAuth();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -37,29 +37,43 @@ export default function DashboardLayout() {
             </Toolbar>
             <Divider />
             <List>
-                <ListItem disablePadding>
-                    <ListItemButton component={Link} to="/news" selected={location.pathname.startsWith('/news')}>
-                        <ListItemText primary="News" />
-                    </ListItemButton>
-                </ListItem>
-                <ListItem disablePadding>
-                    <ListItemButton component={Link} to="/department" selected={location.pathname.startsWith('/department')}>
-                        <ListItemText primary="Departments" />
-                    </ListItemButton>
-                </ListItem>
+                {can('read', 'news') && (
+                    <ListItem disablePadding>
+                        <ListItemButton component={Link} to="/news" selected={location.pathname.startsWith('/news')}>
+                            <ListItemText primary="News" />
+                        </ListItemButton>
+                    </ListItem>
+                )}
+                {can('read', 'department') && (
+                    <ListItem disablePadding>
+                        <ListItemButton component={Link} to="/department" selected={location.pathname.startsWith('/department')}>
+                            <ListItemText primary="Departments" />
+                        </ListItemButton>
+                    </ListItem>
+                )}
+                {can('read', 'user', 'any') && (
+                    <ListItem disablePadding>
+                        <ListItemButton component={Link} to="/users" selected={location.pathname.startsWith('/users')}>
+                            <ListItemText primary="Users" />
+                        </ListItemButton>
+                    </ListItem>
+                )}
             </List>
             <Divider />
             <Box sx={{ p: 2 }}>
-                <Typography variant="caption" display="block" color="text.secondary">
-                    Logged in as: {user?.username} (ID: {user?.sub})
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Logged in as: {user?.username}
                 </Typography>
                 <Button
+                    component={Link}
+                    to="/profile"
                     variant="outlined"
-                    color="error"
                     fullWidth
-                    onClick={logout}
-                    sx={{ mt: 1 }}
+                    sx={{ mb: 1 }}
                 >
+                    My Profile
+                </Button>
+                <Button variant="contained" color="error" fullWidth onClick={logout}>
                     Logout
                 </Button>
             </Box>
