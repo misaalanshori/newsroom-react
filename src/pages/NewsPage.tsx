@@ -130,7 +130,7 @@ export default function NewsPage() {
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                 <Typography variant="h4">News Articles</Typography>
-                {can('write', 'news') && (
+                {can('create', 'news') && (
                     <Button variant="contained" onClick={() => handleOpen()}>
                         Add Article
                     </Button>
@@ -165,18 +165,18 @@ export default function NewsPage() {
                                 <TableCell align="right">
                                     {/* 
                                       Show actions if:
-                                      1. User has global/wide write access (Admin/SuperAdmin) - check 'any' ownership.
-                                      2. OR User has general write access AND owns the item (Editor).
+                                      1. User has global/wide update access (Admin/SuperAdmin) - check 'any' ownership.
+                                      2. OR User has general update access AND owns the item (Editor).
                                     */}
-                                    {(can('write', 'news', 'any') || (can('write', 'news') && item.writerId === canUser?.sub)) && (
-                                        <>
-                                            <Button color="primary" onClick={() => handleOpen(item)}>
-                                                Edit
-                                            </Button>
-                                            <Button color="error" onClick={() => handleDelete(item.id)}>
-                                                Delete
-                                            </Button>
-                                        </>
+                                    {(can('update', 'news', 'any') || (can('update', 'news') && item.writerId === canUser?.sub)) && (
+                                        <Button color="primary" onClick={() => handleOpen(item)}>
+                                            Edit
+                                        </Button>
+                                    )}
+                                    {(can('delete', 'news', 'any') || (can('delete', 'news') && item.writerId === canUser?.sub)) && (
+                                        <Button color="error" onClick={() => handleDelete(item.id)}>
+                                            Delete
+                                        </Button>
                                     )}
                                 </TableCell>
                             </TableRow>

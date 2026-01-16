@@ -135,15 +135,15 @@ export default function UsersPage() {
                                 <TableCell>{user.role?.name}</TableCell>
                                 <TableCell>{user.department?.name || '-'}</TableCell>
                                 <TableCell align="right">
-                                    {can('write', 'user') && (
-                                        <>
-                                            <Button color="primary" onClick={() => handleOpen(user)}>
-                                                Edit
-                                            </Button>
-                                            <Button color="error" onClick={() => handleDelete(user.id)}>
-                                                Delete
-                                            </Button>
-                                        </>
+                                    {can('update', 'user', 'any') && (
+                                        <Button color="primary" onClick={() => handleOpen(user)}>
+                                            Edit
+                                        </Button>
+                                    )}
+                                    {can('delete', 'user', 'any') && (
+                                        <Button color="error" onClick={() => handleDelete(user.id)}>
+                                            Delete
+                                        </Button>
                                     )}
                                 </TableCell>
                             </TableRow>
@@ -177,7 +177,7 @@ export default function UsersPage() {
                         sx={{ mb: 2 }}
                     />
 
-                    {can('write:sensitive', 'user') && (
+                    {can('update:sensitive', 'user') && (
                         <>
                             <FormControl fullWidth sx={{ mb: 2 }}>
                                 <InputLabel>Role</InputLabel>

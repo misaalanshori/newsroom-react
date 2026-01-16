@@ -58,6 +58,20 @@ export default function DashboardLayout() {
                         </ListItemButton>
                     </ListItem>
                 )}
+                {can('read', 'role') && (
+                    <ListItem disablePadding>
+                        <ListItemButton component={Link} to="/roles" selected={location.pathname.startsWith('/roles')}>
+                            <ListItemText primary="Roles" />
+                        </ListItemButton>
+                    </ListItem>
+                )}
+                {can('read', 'policy') && (
+                    <ListItem disablePadding>
+                        <ListItemButton component={Link} to="/policy" selected={location.pathname.startsWith('/policy')}>
+                            <ListItemText primary="Policy" />
+                        </ListItemButton>
+                    </ListItem>
+                )}
             </List>
             <Divider />
             <Box sx={{ p: 2 }}>

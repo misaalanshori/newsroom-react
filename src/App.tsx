@@ -10,6 +10,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 
 import UsersPage from './pages/UsersPage';
 import ProfilePage from './pages/ProfilePage';
+import RolesPage from './pages/RolesPage';
+import PolicyPage from './pages/PolicyPage';
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
             <Route path="department" element={<DepartmentPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="profile" element={<ProfilePage />} />
+            <Route path="roles" element={<RolesPage />} />
+            <Route path="policy" element={<PolicyPage />} />
           </Route>
         </Route>
       </Routes>

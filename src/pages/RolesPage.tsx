@@ -18,11 +18,11 @@ import {
     CircularProgress
 } from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { departmentApi } from '../api/department';
-import type { Department } from '../api/department';
+import { roleApi } from '../api/role';
+import type { Role } from '../api/role';
 import { useAuth } from '../hooks/useAuth';
 
-export default function DepartmentPage() {
+export default function RolesPage() {
     const { can } = useAuth();
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
@@ -30,39 +30,39 @@ export default function DepartmentPage() {
     const [name, setName] = useState('');
     const [slug, setSlug] = useState('');
 
-    const { data: departments, isLoading } = useQuery({
-        queryKey: ['departments'],
-        queryFn: departmentApi.getAll,
+    const { data: roles, isLoading } = useQuery({
+        queryKey: ['roles'],
+        queryFn: roleApi.getAll,
     });
 
     const createMutation = useMutation({
-        mutationFn: departmentApi.create,
+        mutationFn: roleApi.create,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['departments'] });
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
             handleClose();
         },
     });
 
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: { name: string; slug: string } }) => departmentApi.update(id, data),
+        mutationFn: ({ id, data }: { id: number; data: { name?: string; slug?: string } }) => roleApi.update(id, data),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['departments'] });
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
             handleClose();
         },
     });
 
     const deleteMutation = useMutation({
-        mutationFn: departmentApi.delete,
+        mutationFn: roleApi.delete,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['departments'] });
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
         },
     });
 
-    const handleOpen = (dept?: Department) => {
-        if (dept) {
-            setEditId(dept.id);
-            setName(dept.name);
-            setSlug(dept.slug);
+    const handleOpen = (role?: Role) => {
+        if (role) {
+            setEditId(role.id);
+            setName(role.name);
+            setSlug(role.slug);
         } else {
             setEditId(null);
             setName('');
@@ -87,7 +87,7 @@ export default function DepartmentPage() {
     };
 
     const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this department?')) {
+        if (confirm('Are you sure you want to delete this role?')) {
             deleteMutation.mutate(id);
         }
     };
@@ -95,19 +95,25 @@ export default function DepartmentPage() {
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newName = e.target.value;
         setName(newName);
-        const generatedSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        setSlug(generatedSlug);
+        if (!editId) {
+            const generatedSlug = newName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+            setSlug(generatedSlug);
+        }
     };
 
     if (isLoading) return <CircularProgress />;
 
+    if (!can('read', 'role')) {
+        return <Typography>You do not have permission to view roles.</Typography>;
+    }
+
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h4">Departments</Typography>
-                {can('create', 'department') && (
+                <Typography variant="h4">Roles</Typography>
+                {can('create', 'role') && (
                     <Button variant="contained" onClick={() => handleOpen()}>
-                        Add Department
+                        Add Role
                     </Button>
                 )}
             </Box>
@@ -123,19 +129,19 @@ export default function DepartmentPage() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {departments?.map((dept) => (
-                            <TableRow key={dept.id}>
-                                <TableCell>{dept.id}</TableCell>
-                                <TableCell>{dept.name}</TableCell>
-                                <TableCell>{dept.slug}</TableCell>
+                        {roles?.map((role) => (
+                            <TableRow key={role.id}>
+                                <TableCell>{role.id}</TableCell>
+                                <TableCell>{role.name}</TableCell>
+                                <TableCell>{role.slug}</TableCell>
                                 <TableCell align="right">
-                                    {can('update', 'department') && (
-                                        <Button color="primary" onClick={() => handleOpen(dept)}>
+                                    {can('update', 'role') && (
+                                        <Button color="primary" onClick={() => handleOpen(role)}>
                                             Edit
                                         </Button>
                                     )}
-                                    {can('delete', 'department') && (
-                                        <Button color="error" onClick={() => handleDelete(dept.id)}>
+                                    {can('delete', 'role') && (
+                                        <Button color="error" onClick={() => handleDelete(role.id)}>
                                             Delete
                                         </Button>
                                     )}
@@ -147,18 +153,18 @@ export default function DepartmentPage() {
             </TableContainer>
 
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>{editId ? 'Edit Department' : 'Add Department'}</DialogTitle>
+                <DialogTitle>{editId ? 'Edit Role' : 'Add Role'}</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus
                         margin="dense"
-                        label="Department Name"
+                        label="Role Name"
                         type="text"
                         fullWidth
                         variant="outlined"
                         value={name}
                         onChange={handleNameChange}
-                        sx={{ mb: 2 }}
+                        sx={{ mb: 2, mt: 1 }}
                     />
                     <TextField
                         margin="dense"
@@ -168,7 +174,7 @@ export default function DepartmentPage() {
                         variant="outlined"
                         value={slug}
                         onChange={(e) => setSlug(e.target.value)}
-                        helperText="Auto-generated from name"
+                        helperText="Auto-generated from name (for new roles)"
                     />
                 </DialogContent>
                 <DialogActions>
